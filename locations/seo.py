@@ -246,6 +246,44 @@ def parse_ldjson(
         yield extract_geo(item, entry.get("geo"))
 
 
+def extract_schema(brand, response, require_location=True) -> Iterator[GeojsonPointItem]:
+    fields = extract_schema_properties(response)
+    if len(fields) > 0:
+        item = brand.item(response)
+        extract_details(item, fields)
+        if not require_location or item.has_geo():
+            yield item
+
+
+def extract_schema_properties(response):
+    fields = {}
+    for schema in [
+        "schema.org/PostalAddress",
+        "schema.org/geo",
+        "schema.org/GeoCoordinates",
+    ]:
+        matches = response.xpath(
+            '//*[contains(@itemtype,"{}")]//*[@itemprop]'.format(schema)
+        )
+        for match in matches:
+            prop = match.xpath("@itemprop").get()
+            content = match.xpath("@content").get()
+            if not content:
+                content = match.xpath("text()").get()
+            if content:
+                fields[prop] = clean_field_value(content)
+    return fields
+
+
+def clean_field_value(s):
+    # A tad inefficient but is basically cleaning up a multi-line, comma-separated, potential mess.
+    if s:
+        s = s.replace("\n", ",").replace("\r", ",").replace("\t", ",")
+        s = " ".join(s.split())
+        return join_address_array(s.split(","))
+    return None
+
+
 def join_address_fields(src, *fields):
     """
     Pull referenced fields from the src and form a clean address string assuming comma separated address.

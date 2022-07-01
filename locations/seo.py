@@ -201,7 +201,7 @@ def get_all_keys(src, lookup_key=None):
 
 def parse_ldjson(
     brand, entry_or_entries, required_type, response=None
-) -> GeojsonPointItem:
+) -> Iterator[GeojsonPointItem]:
     # Sometimes (hello Marriott in the first case) the entry array is one level down.
     if isinstance(entry_or_entries, dict):
         if entry_or_entries.get("@graph"):

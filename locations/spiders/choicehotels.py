@@ -1,79 +1,92 @@
+# -*- coding: utf-8 -*-
+import scrapy
 import json
 import re
-import scrapy
-
-from locations.items import GeojsonPointItem
-
-
-brand_name_override = {
-    "Comfort Suites Suites": "Comfort Suites",
-    "Econo Lodge Lodge": "Econo Lodge",
-}
+from locations.seo import extract_details, get_first_key
+from locations.brands import Brand
 
 
-class ChoiceHotelsSpider(scrapy.Spider):
+# The implementation ignores "collection" hotels. This may want to be re-visited but they
+# should not be branded Choice Hotels in common with other branded hotel collections
+class ChoiceHotelsSpider(scrapy.spiders.SitemapSpider):
     name = "choicehotels"
-    item_attributes = {"brand": "Choice Hotels", "brand_wikidata": "Q1075788"}
     allowed_domains = ["choicehotels.com"]
-    download_delay = 0.2
-
-    base_url = "https://www.choicehotels.com/cms/pages/choice-hotels"
-
-    start_urls = [
-        "https://www.choicehotels.com/cms/pages/comfort-inn/sitemap?d=DESKTOP&applocale=en-us",
-        "https://www.choicehotels.com/cms/pages/comfort-suites/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/quality-inn/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/sleep-inn/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/clarion/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/cambria/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/mainstay/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/suburban/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/econo-lodge/sitemap?d=DESKTOP&applocale=en-u",
-        "https://www.choicehotels.com/cms/pages/rodeway-inn/sitemap?d=DESKTOP&applocale=en-u",
-    ]
-
-    def parse_hotel(self, response):
-        script = "".join(response.xpath("//script/text()").extract())
-        data = json.loads(re.search(r"window.hotelInfoData = (.*)?;", script).group(1))
-
-        if data["hotel"]["status"] == "TERMINATED":
-            return
-
-        brand = (
-            data["hotel"]["general"]["brandName"]
-            + " "
-            + data["hotel"]["general"]["productName"]
-        )
-
-        properties = {
-            "ref": data["hotel"]["id"],
-            "name": data["hotel"]["name"],
-            "addr_full": data["hotel"]["address"]["line1"],
-            "city": data["hotel"]["address"]["city"],
-            "state": data["hotel"]["address"].get("subdivision"),
-            "postcode": data["hotel"]["address"].get("postalCode"),
-            "country": data["hotel"]["address"]["country"],
-            "phone": data["hotel"]["general"]["phone"],
-            "lat": float(data["hotel"]["general"]["lat"]),
-            "lon": float(data["hotel"]["general"]["lon"]),
-            "website": response.url,
-            "brand": brand_name_override.get(brand, brand),
-        }
-
-        yield GeojsonPointItem(**properties)
-
-    def parse_hotel_list(self, response):
-        urls = response.xpath("//p/a/@href").extract()
-        if not urls:
-            urls = response.xpath("//div/a/@href").extract()
-
-        for url in urls:
-            yield scrapy.Request(response.urljoin(url), callback=self.parse_hotel)
+    sitemap_urls = ["https://www.choicehotels.com/propertysitemap.xml"]
+    my_brands = {
+        "Ascend Hotel Collection": None,
+        "Cambria Hotel": Brand.from_wikidata("Cambria Hotel", "Q1075788"),
+        "Clarion Hotel": Brand.from_wikidata("Clarion Hotel", "Q78165540"),
+        "Clarion Hotel & Suites": Brand.from_wikidata(
+            "Clarion Hotel & Suites", "Q78165540"
+        ),
+        "Clarion Inn": Brand.from_wikidata("Clarion Inn", "Q78165540"),
+        "Clarion Inn & Suites": Brand.from_wikidata(
+            "Clarion Inn & Suites", "Q78165540"
+        ),
+        "Clarion Pointe": Brand.from_wikidata("Clarion Pointe", "Q78165540"),
+        "Clarion Suites": Brand.from_wikidata("Clarion Suites", "Q78165540"),
+        "Comfort Hotel": Brand.from_wikidata("Comfort Hotel", "Q1075788"),
+        "Comfort Inn": Brand.from_wikidata("Comfort Inn", "Q1075788"),
+        "Comfort Inn & Suites": Brand.from_wikidata("Comfort Inn & Suites", "Q1075788"),
+        "Comfort Suites": Brand.from_wikidata("Comfort Suites", "Q1075788"),
+        "Econo Lodge": Brand.from_wikidata("Econo Lodge", "Q5333330"),
+        "MainStay Suites": Brand.from_wikidata("MainStay Suites", "Q1075788"),
+        "Quality Hotel": Brand.from_wikidata("Quality Hotel", "Q1075788"),
+        "Quality Hotel & Suites": Brand.from_wikidata(
+            "Quality Hotel & Suites", "Q1075788"
+        ),
+        "Quality Inn": Brand.from_wikidata("Quality Inn", "Q1075788"),
+        "Quality Suites": Brand.from_wikidata("Quality Suites", "Q1075788"),
+        "Quality Inn & Suites": Brand.from_wikidata("Quality Inn & Suites", "Q1075788"),
+        "Rodeway Inn": Brand.from_wikidata("Rodeway Inn", "Q7356709"),
+        "Rodeway Inn & Suites": Brand.from_wikidata("Rodeway Inn & Suites", "Q7356709"),
+        "Sleep Inn": Brand.from_wikidata("Sleep Inn", "Q1075788"),
+        "Sleep Inn & Suites": Brand.from_wikidata("Sleep Inn & Suites", "Q1075788"),
+        "Suburban Extended Stay Hotel": Brand.from_wikidata(
+            "Suburban Extended Stay Hotel", "Q1075788"
+        ),
+        "WoodSpring Suites": Brand.from_wikidata("WoodSpring Suites", "Q30672853"),
+    }
+    brand_name_override = {
+        "Cambria Hotel & Suites": "Cambria Hotel",
+        "Comfort Resort": "Comfort Hotel",
+        "Comfort Suites Suites": "Comfort Suites",
+        "Econo Lodge Lodge": "Econo Lodge",
+        "Econo Lodge Inn & Suites": "Econo Lodge",
+        "Quality Resort": "Quality Hotel",
+    }
+    download_delay = 1.0
 
     def parse(self, response):
-        urls = response.xpath(
-            '//h3[contains(text(), "Locations")]/following-sibling::div//h6/a/@href'
-        ).extract()
-
-        for url in urls:
-            yield scrapy.Request(self.base_url + url, callback=self.parse_hotel_list)
+        if (
+            "/test-hotels" in response.url
+            or "/notavail/" in response.url
+            or "/ascend-hotels/" in response.url
+        ):
+            return
+        script = "".join(response.xpath("//script/text()").extract())
+        matched = re.search(r"window.PRELOADED_STATE = (.*)?;", script)
+        data = json.loads(matched.group(1))
+        property_entry = get_first_key(data, "property")
+        if not property_entry or property_entry["status"] != "ACTIVE":
+            return
+        brand_name = "{} {}".format(
+            property_entry["brandName"].strip(), property_entry["productName"].strip()
+        )
+        brand_name = self.brand_name_override.get(brand_name, brand_name)
+        brand = self.my_brands.get(brand_name)
+        if not brand:
+            self.logger.error(">>>>>> no brand for %s %s", brand_name, response.url)
+            return
+        item = brand.item(response)
+        extract_details(item, property_entry)
+        address = property_entry["address"]
+        extract_details(item, address)
+        item["street_address"] = address["line1"]
+        item["state"] = address.get("subdivision")
+        # Add a nice exterior image link if possible
+        for entry in get_first_key(property_entry, "images"):
+            if "Exterior" == entry.get("categoryCode"):
+                item["image"] = "https://www.choicehotels.com" + entry["backupUrl"]
+                break
+        yield item

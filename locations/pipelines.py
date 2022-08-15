@@ -5,6 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import re
+from locations.geonames_utils import to_iso_alpha2_country_code
 
 from scrapy.exceptions import DropItem
 
@@ -41,6 +42,17 @@ class ApplySpiderLevelAttributesPipeline(object):
         for (key, value) in item_attributes.items():
             if item.get(key) is None:
                 item[key] = value
+
+        return item
+
+
+class ApplyCleanCountryCodePipeline(object):
+    def process_item(self, item, spider):
+        country = item.get("country")
+        if country:
+            item["country"] = to_iso_alpha2_country_code(item.get("country"))
+            if not item.get("country"):
+                spider.logger.warn("country %s removed as invalid", country)
 
         return item
 

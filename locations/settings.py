@@ -85,6 +85,7 @@ ITEM_PIPELINES = {
     "locations.pipelines.DuplicatesPipeline": 200,
     "locations.pipelines.ApplySpiderNamePipeline": 250,
     "locations.pipelines.ApplySpiderLevelAttributesPipeline": 300,
+    "locations.pipelines.ApplyCleanCountryCodePipeline": 390,
     "locations.pipelines.ExtractGBPostcodePipeline": 400,
     "locations.pipelines.AssertURLSchemePipeline": 500,
 }

@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import logging
 from scrapy.exporters import JsonLinesItemExporter, JsonItemExporter
 from scrapy.utils.python import to_bytes
 
@@ -29,20 +28,14 @@ mapping = (
 
 
 def item_to_properties(item):
-    props = {}
+    props = {"ref": str(item["ref"])}
 
-    # Ref is required
-    props["ref"] = str(item["ref"])
-
-    # Add in the extra bits
-    extras = item.get("extras")
-    if extras:
+    if extras := item.get("extras"):
         props.update(extras)
 
     # Bring in the optional stuff
     for map_from, map_to in mapping:
-        item_value = item.get(map_from)
-        if item_value:
+        if item_value := item.get(map_from):
             props[map_to] = item_value
 
     return props
@@ -52,69 +45,39 @@ def compute_hash(item):
     ref = str(item.get("ref") or "").encode("utf8")
     sha1 = hashlib.sha1(ref)
 
-    spider_name = item.get("extras", {}).get("@spider")
-    if spider_name:
+    if spider_name := item.get("extras", {}).get("@spider"):
         sha1.update(spider_name.encode("utf8"))
 
     return base64.urlsafe_b64encode(sha1.digest()).decode("utf8")
 
 
+def build_feature(item):
+    feature = [
+        ("type", "Feature"),
+        ("id", compute_hash(item)),
+        ("properties", item_to_properties(item)),
+    ]
+    if item.has_geo():
+        feature.append(
+            (
+                "geometry",
+                {
+                    "type": "Point",
+                    "coordinates": [item["lon"], item["lat"]],
+                },
+            )
+        )
+    return feature
+
+
 class LineDelimitedGeoJsonExporter(JsonLinesItemExporter):
     def _get_serialized_fields(self, item, default_value=None, include_empty=None):
-        feature = []
-        feature.append(("type", "Feature"))
-        feature.append(("id", compute_hash(item)))
-        feature.append(("properties", item_to_properties(item)))
-
-        lat = item.get("lat")
-        lon = item.get("lon")
-        if lat and lon:
-            try:
-                feature.append(
-                    (
-                        "geometry",
-                        {
-                            "type": "Point",
-                            "coordinates": [float(item["lon"]), float(item["lat"])],
-                        },
-                    )
-                )
-            except ValueError:
-                logging.warning(
-                    "Couldn't convert lat (%s) and lon (%s) to string", lat, lon
-                )
-                pass
-
-        return feature
+        return build_feature(item)
 
 
 class GeoJsonExporter(JsonItemExporter):
     def _get_serialized_fields(self, item, default_value=None, include_empty=None):
-        feature = []
-        feature.append(("type", "Feature"))
-        feature.append(("id", compute_hash(item)))
-        feature.append(("properties", item_to_properties(item)))
-
-        lat = item.get("lat")
-        lon = item.get("lon")
-        if lat and lon:
-            try:
-                feature.append(
-                    (
-                        "geometry",
-                        {
-                            "type": "Point",
-                            "coordinates": [float(item["lon"]), float(item["lat"])],
-                        },
-                    )
-                )
-            except ValueError:
-                logging.warning(
-                    "Couldn't convert lat (%s) and lon (%s) to string", lat, lon
-                )
-                pass
-
-        return feature
+        return build_feature(item)
 
     def start_exporting(self):
         self.file.write(

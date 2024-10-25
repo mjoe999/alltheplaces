@@ -6,6 +6,7 @@ from scrapy.http import JsonRequest
 from locations.categories import Categories, apply_category
 from locations.dict_parser import DictParser
 from locations.pipelines.address_clean_up import clean_address
+from locations.pipelines.extract_gb_postcode import located_in_gb_retail
 
 
 class SpecsaversSpider(Spider):
@@ -149,4 +150,5 @@ fragment sectionalNotification on StoreSectionalNotification {
                 elif store_type == "audiology":
                     apply_category(Categories.SHOP_HEARING_AIDS, item)
                     item["extras"]["healthcare"] = "audiologist"
+                located_in_gb_retail(item, spider=self)
                 yield item

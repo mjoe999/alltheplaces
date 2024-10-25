@@ -6,23 +6,12 @@ from scrapy.http import Response
 
 from locations.dict_parser import DictParser
 from locations.hours import DAYS, OpeningHours
-from locations.spiders.asda_gb import AsdaGBSpider
-from locations.spiders.sainsburys import SainsburysSpider
-from locations.spiders.tesco_gb import TescoGBSpider, set_located_in
-from locations.spiders.waitrose import WaitroseSpider
+from locations.pipelines.extract_gb_postcode import located_in_gb_retail
 
 
 class JohnsonCleanersGBSpider(Spider):
     name = "johnson_cleaners_gb"
     item_attributes = {"brand": "Johnson Cleaners", "brand_wikidata": "Q6268527"}
-
-    located_in_map = {
-        "0": None,
-        "asda": AsdaGBSpider.item_attributes,
-        "sainsburys": SainsburysSpider.SAINSBURYS,
-        "tesco": TescoGBSpider.TESCO_EXTRA,
-        "waitrose": WaitroseSpider.WAITROSE,
-    }
 
     def make_request(self, lat: float, lon: float) -> FormRequest:
         return FormRequest(
@@ -47,13 +36,11 @@ class JohnsonCleanersGBSpider(Spider):
             item["branch"] = item.pop("name")
             item["website"] = urljoin("https://www.johnsoncleaners.com/branch/", location["url"])
             item["street_address"] = location["street1"]
+            item["country"] = "GB"
 
             if supermarket := location.get("supermarket"):
-                if supermarket in self.located_in_map:
-                    if self.located_in_map[supermarket]:
-                        set_located_in(self.located_in_map[supermarket], item)
-                else:
-                    self.crawler.stats.inc_value("{}/unknown_supermarket/{}".format(self.name, supermarket))
+                if not located_in_gb_retail(item, supermarket, self):
+                    self.crawler.stats.inc_value("{}/unknown_located_in/{}".format(self.name, supermarket))
 
             item["opening_hours"] = OpeningHours()
             for day in range(1, 7):

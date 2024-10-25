@@ -41,10 +41,12 @@ class ExxonMobilSpider(SitemapSpider):
     sitemap_rules = [(r"/find-station/.+-\d+$", "parse")]
     custom_settings = {"ROBOTSTXT_OBEY": False}
 
+    ESSO = {"brand": "Esso", "brand_wikidata": "Q867662"}
+
     brands = {
         "Exxon": {"brand": "Exxon", "brand_wikidata": "Q109675651"},
         "Mobil": {"brand": "Mobil", "brand_wikidata": "Q109676002"},
-        "Esso": {"brand": "Esso", "brand_wikidata": "Q867662"},
+        "Esso": ESSO,
     }
 
     # Some countries/brands can be accessed by the US api, others need their own endpoint and some need a suffix

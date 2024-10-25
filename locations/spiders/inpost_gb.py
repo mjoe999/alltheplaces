@@ -6,6 +6,7 @@ from scrapy.http import JsonRequest, Response
 from locations.categories import apply_yes_no
 from locations.dict_parser import DictParser
 from locations.hours import OpeningHours
+from locations.pipelines.extract_gb_postcode import located_in_gb_retail
 
 
 class InpostGBSpider(Spider):
@@ -30,12 +31,17 @@ class InpostGBSpider(Spider):
                 continue
             item = DictParser.parse(location)
             item["ref"] = item.pop("name")
-            item["located_in"] = (
+
+            located_in = (
                 location["address_details"]["building_number"]
                 .removeprefix("24/7 ")
                 .removeprefix("InPost Locker")
                 .strip(" -")
             )
+            item["country"] = location["country"]
+            if not located_in_gb_retail(item, test_str=located_in, spider=self):
+                item["located_in"] = located_in
+
             item["street_address"] = location["address_details"]["street"]
             item["city"] = location["address_details"]["city"]
             item["postcode"] = location["address_details"]["post_code"]
@@ -45,7 +51,7 @@ class InpostGBSpider(Spider):
             apply_yes_no("parcel_mail_in", item, "parcel_send   " in location["functions"])
             apply_yes_no("parcel_pickup", item, "parcel_collect" in location["functions"])
 
-            if location["location_247"]:
+            if location["location_247"] or location["opening_hours"] == "24/7":
                 item["opening_hours"] = "24/7"
             else:
                 item["opening_hours"] = self.parse_opening_hours(location["opening_hours"])

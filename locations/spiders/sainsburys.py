@@ -4,7 +4,7 @@ from scrapy import Request
 from locations.categories import Categories, Extras, Fuel, PaymentMethods, apply_category, apply_yes_no
 from locations.dict_parser import DictParser
 from locations.hours import DAYS, OpeningHours
-from locations.items import Feature
+from locations.items import Feature, set_located_in
 from locations.pipelines.address_clean_up import clean_address
 
 
@@ -97,10 +97,12 @@ class SainsburysSpider(scrapy.Spider):
             return None  # LloydsPharmacyGBSpider
         elif store["store_type"] == "tm":
             apply_category(Categories.BUREAU_DE_CHANGE, item)
+            set_located_in(self.SAINSBURYS, item, spider=self)
         elif store["store_type"] == "specsavers":
             return None  # SpecsaversGBSpider
         elif store["store_type"] == "restaurant":
             apply_category(Categories.CAFE, item)
+            set_located_in(self.SAINSBURYS, item, spider=self)
         elif store["store_type"] == "habitat":
             return None  # https://www.habitat.co.uk/
         else:

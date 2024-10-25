@@ -6,6 +6,7 @@ from scrapy.spiders import CrawlSpider, Rule
 
 from locations.categories import Categories, apply_category
 from locations.dict_parser import DictParser
+from locations.pipelines.extract_gb_postcode import located_in_gb_retail
 
 CATEGORIES = [
     "Car Keys (without buttons)",
@@ -42,8 +43,7 @@ class TimpsonGBSpider(CrawlSpider):
     def parse_func(self, response):
         return self.extract(response)
 
-    @staticmethod
-    def extract(response):
+    def extract(self, response):
         pattern = re.compile(r"var lpr_vars = ({.*?})\n", re.MULTILINE | re.DOTALL)
         for lpr_var in response.xpath('//script[contains(., "var lpr_vars")]/text()').re(pattern):
             store = json.loads(lpr_var)
@@ -84,10 +84,7 @@ class TimpsonGBSpider(CrawlSpider):
                 else:
                     apply_category(Categories.SHOP_SHOE_REPAIR, item)
 
-                # TODO: too painful to port at present
-                # for brand in [Brand.MORRISONS, Brand.SAINSBURYS, Brand.TESCO, Brand.ASDA, Brand.WAITROSE]:
-                #     if brand.name().replace('\'s', '').lower() in response.url.lower():
-                #         item.set_located_with(brand)
+                located_in_gb_retail(item, spider=self)
                 return item
 
 

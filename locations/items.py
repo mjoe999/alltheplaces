@@ -258,3 +258,27 @@ def get_merged_extras(matched_items: dict, main_language: str) -> dict:
                 for language, match in matched_items.items():
                     item["extras"][f"{extras_key}:{language}"] = match["extras"].get(extras_key)
     return item
+
+
+def set_located_in(brand: dict | type, item: Feature, spider: scrapy.Spider = None):
+    """
+    In many instances a POI tells us enough about itself to be located in/with a "bigger" brand
+    e.g. a pharmacy or opticians brand with a Sainsbury's GB store.
+    :param brand: the brand in which to locate the item, a Spider can be referenced in which case `item_attributes` is used
+    :param item: the POI to be located in an instance of the brand
+    :param spider: if provided then update with statistics count(s)
+    """
+    if isinstance(brand, type):
+        if hasattr(brand, "item_attributes"):
+            brand = getattr(brand, "item_attributes")
+        else:
+            raise AttributeError("no item_attributes")
+    if not isinstance(brand, dict):
+        raise AttributeError("unable to resolve brand")
+    if brand.get("brand") or brand.get("brand_wikidata"):
+        item["located_in"] = brand.get("brand")
+        item["located_in_wikidata"] = brand.get("brand_wikidata")
+        if spider:
+            spider.crawler.stats.inc_value("atp/{}/located_in/{}".format(spider.name, item["located_in"]))
+    else:
+        raise AttributeError("brand has no reference data")

@@ -23,7 +23,6 @@ class KwikTripSpider(scrapy.Spider):
     item_attributes = {"brand": "Kwik Trip", "brand_wikidata": "Q6450420"}
     allowed_domains = ["www.kwiktrip.com"]
     start_urls = ["https://www.kwiktrip.com/Maps-Downloads/Store-List"]
-    requires_proxy = True
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
         for location in response.xpath("(//tr)[position()>1]"):

@@ -40,7 +40,6 @@ class TescoGBSpider(SitemapSpider, StructuredDataSpider):
     ]
     wanted_types = ["Pharmacy", "GasStation", "CafeOrCoffeeShop", "GroceryStore"]
     custom_settings = {"USER_AGENT": BROWSER_DEFAULT}
-    requires_proxy = True
     strip_names = [
         "Tesco Café",
         "Tesco Petrol Filling Station",

@@ -17,7 +17,6 @@ class AussieDisposalsAUSpider(SitemapSpider):
     sitemap_rules = [(r"^https:\/\/www\.aussiedisposals\.com\.au\/store-locator\/ad_", "parse")]
     allowed_domains = ["www.aussiedisposals.com.au"]
     custom_settings = {"ROBOTSTXT_OBEY": False}
-    requires_proxy = "AU"
 
     def parse(self, response: Response) -> Iterable[Feature]:
         # Note: AmastyStoreLocatorSpider not used here as opening hours are

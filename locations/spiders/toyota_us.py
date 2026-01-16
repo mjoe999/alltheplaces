@@ -15,7 +15,6 @@ class ToyotaUSSpider(JSONBlobSpider):
     name = "toyota_us"
     item_attributes = TOYOTA_SHARED_ATTRIBUTES
     locations_key = "dealers"
-    requires_proxy = True
 
     async def start(self) -> AsyncIterator[JsonRequest | Request]:
         # API can not handle huge radius coverage, therefore

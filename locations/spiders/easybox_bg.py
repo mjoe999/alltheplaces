@@ -11,7 +11,6 @@ class EasyboxBGSpider(scrapy.Spider):
     allowed_domains = ["sameday.bg"]
     start_urls = ["https://sameday.bg/wp/wp-admin/admin-ajax.php?action=get_ooh_lockers_request&country=Bulgaria"]
     custom_settings = {"ROBOTSTXT_OBEY": False}
-    requires_proxy = "BG"
     no_refs = True
     drop_attributes = {"image"}
 

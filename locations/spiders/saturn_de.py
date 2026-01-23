@@ -13,7 +13,6 @@ class SaturnDESpider(SitemapSpider, StructuredDataSpider):
     sitemap_urls = ["https://www.saturn.de/sitemaps/sitemap-marketpages.xml"]
     sitemap_rules = [(r"/de/store/.+", "parse_sd")]
     wanted_types = ["Store"]
-    requires_proxy = True
 
     def post_process_item(self, item: Feature, response: Response, ld_data: dict, **kwargs):
         item["branch"] = item.pop("name").removeprefix("Saturn ")

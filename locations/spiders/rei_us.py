@@ -10,7 +10,6 @@ class ReiUSSpider(SitemapSpider, StructuredDataSpider):
     sitemap_urls = ["https://www.rei.com/sitemap-stores.xml"]
     sitemap_rules = [(r"^https://www.rei.com/stores/([^/]+)$", "parse_sd")]
     wanted_types = ["Store"]
-    requires_proxy = True
 
     def post_process_item(self, item, response, ld_data, **kwargs):
         item["website"] = response.url

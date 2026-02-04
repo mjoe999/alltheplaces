@@ -18,7 +18,6 @@ class HomeDepotSpider(CrawlSpider, StructuredDataSpider):
         Rule(LinkExtractor(allow=r"^https:\/\/www.homedepot.com\/l\/..$")),
         Rule(LinkExtractor(allow=r"^https:\/\/www.homedepot.com\/l\/.*\/\d*$"), callback="parse_sd"),
     ]
-    requires_proxy = "US"
     custom_settings = {"USER_AGENT": BROWSER_DEFAULT}
 
     def post_process_item(self, item, response, ld_data, **kwargs):

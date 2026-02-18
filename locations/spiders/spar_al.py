@@ -13,7 +13,6 @@ class SparALSpider(Spider):
     item_attributes = SPAR_SHARED_ATTRIBUTES
     start_urls = ["https://www.spar.al/index.php/en/spar-map"]
     no_refs = True
-    requires_proxy = True
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
         for location in response.xpath('//select[@id="toPMAddressPlgPM1"]/option'):

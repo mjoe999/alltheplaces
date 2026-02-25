@@ -11,7 +11,6 @@ from locations.user_agents import BROWSER_DEFAULT
 class NorthernToolUSSpider(Spider):
     name = "northern_tool_us"
     item_attributes = {"brand": "Northern Tool + Equipment", "brand_wikidata": "Q43379813"}
-    requires_proxy = True  # cloudflare
     custom_settings = {"USER_AGENT": BROWSER_DEFAULT}
 
     async def start(self) -> AsyncIterator[FormRequest]:

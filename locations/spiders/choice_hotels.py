@@ -17,7 +17,6 @@ class ChoiceHotelsSpider(SitemapSpider):
         "DOWNLOAD_DELAY": 5,  # Requested by https://www.choicehotels.com/robots.txt
         "USER_AGENT": CHROME_LATEST,
     }
-    requires_proxy = True
 
     brand_mapping = {
         "AC": ("Ascend Hotel Collection", "Q113152464"),

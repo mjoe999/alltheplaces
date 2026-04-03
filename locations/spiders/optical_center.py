@@ -12,7 +12,6 @@ class OpticalCenterSpider(SitemapSpider, StructuredDataSpider):
     sitemap_urls = ["https://optician.optical-center.co.uk/sitemap.xml"]
     sitemap_rules = [("https://optician.optical-center.co.uk/", "parse_sd")]
     sitemap_follow = ["locationsitemap"]
-    requires_proxy = True
     drop_attributes = {"image"}
 
     def iter_linked_data(self, response):

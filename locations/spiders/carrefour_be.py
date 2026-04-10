@@ -23,7 +23,6 @@ class CarrefourBESpider(scrapy.Spider):
         "Maxi": CARREFOUR_SUPERMARKET,
     }
     custom_settings = {"ROBOTSTXT_OBEY": False}
-    requires_proxy = True  # Cloudflare blockage
 
     def parse(self, response):
         for data in response.json():

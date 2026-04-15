@@ -23,7 +23,6 @@ class JumboCHSpider(SitemapSpider, StructuredDataSpider):
     sitemap_rules = [(r"_POS$", "parse_sd")]
     custom_settings = DEFAULT_PLAYWRIGHT_SETTINGS | {"USER_AGENT": BROWSER_DEFAULT, "ROBOTSTXT_OBEY": False}
     is_playwright_spider = True
-    requires_proxy = True
 
     def post_process_item(self, item: Feature, response: TextResponse, ld_data: dict, **kwargs) -> Iterable[Feature]:
         item["street_address"] = response.xpath('//*[@itemprop="streetAddress"]/text()').get()

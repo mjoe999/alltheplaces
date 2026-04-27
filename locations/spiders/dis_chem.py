@@ -18,7 +18,6 @@ class DisChemSpider(CrawlSpider):
     start_urls = ["https://www.dischem.co.za/stores/"]
     skip_auto_cc_domain = True
     no_refs = True
-    requires_proxy = "ZA"
 
     def process_results(self, response, results):
         yield from results

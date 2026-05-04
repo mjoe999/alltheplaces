@@ -11,7 +11,6 @@ class WilcoFarmSpider(JSONBlobSpider):
     item_attributes = {"brand": "Wilco", "brand_wikidata": "Q8000290"}
     allowed_domains = ["www.farmstore.com"]
     start_urls = ["https://www.farmstore.com/locations/"]
-    requires_proxy = True
 
     def extract_json(self, response):
         return chompjs.parse_js_object(response.xpath('//script[contains(text(), "var markers")]/text()').get())

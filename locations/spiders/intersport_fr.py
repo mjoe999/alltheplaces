@@ -13,7 +13,6 @@ class IntersportFRSpider(Spider):
     name = "intersport_fr"
     item_attributes = {"brand": "Intersport", "brand_wikidata": "Q666888"}
     start_url = "https://www.intersport.fr/store-finder/"
-    requires_proxy = "FR"
 
     async def start(self) -> AsyncIterator[Request]:
         # Need to make the request more browser-like to be accepted

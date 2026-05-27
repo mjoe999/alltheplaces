@@ -12,7 +12,6 @@ class PizzaHutAESASpider(Spider):
     name = "pizza_hut_ae_sa"
     item_attributes = {"brand": "Pizza Hut", "brand_wikidata": "Q191615"}
     custom_settings = {"ROBOTSTXT_OBEY": False}
-    requires_proxy = True
 
     async def start(self) -> AsyncIterator[JsonRequest]:
         for key, value in {"uae": "uae", "saudi": "ksa"}.items():

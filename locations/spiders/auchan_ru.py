@@ -9,7 +9,6 @@ from locations.items import Feature
 class AuchanRUSpider(scrapy.Spider):
     name = "auchan_ru"
     start_urls = ["https://www.auchan.ru/v1/shops/external-list"]
-    requires_proxy = "RU"
 
     def parse(self, response):
         for poi in response.json():

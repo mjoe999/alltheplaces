@@ -13,7 +13,6 @@ class StarbucksBRSpider(Spider):
     name = "starbucks_br"
     item_attributes = STARBUCKS_SHARED_ATTRIBUTES
     start_urls = ["https://starbucks.harmo.me/"]  # Locator found on https://starbucks.com.br/
-    requires_proxy = True
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
         # Using xpath we only get few POIs

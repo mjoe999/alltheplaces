@@ -15,7 +15,6 @@ class SaversGBSpider(Spider):
     name = "savers_gb"
     item_attributes = {"brand": "Savers", "brand_wikidata": "Q7428189"}
     start_urls = ["https://api.savers.co.uk/api/v2/sv/stores?country=GB&currentPage=0&pageSize=1000"]
-    requires_proxy = True
     custom_settings = {"USER_AGENT": BROWSER_DEFAULT}
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
